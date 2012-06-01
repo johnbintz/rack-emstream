@@ -15,5 +15,5 @@ Gem::Specification.new do |gem|
   gem.require_paths = ["lib"]
   gem.version       = Rack::Emstream::VERSION
 
-  gem.require_dependency 'eventmachine'
+  gem.add_dependency 'eventmachine'
 end
