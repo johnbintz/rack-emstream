@@ -1,29 +1,42 @@
-# Rack::Emstream
+# Super-simple Rack streaming with Thin and other EventMachine-based servers
 
-TODO: Write a gem description
+This is the absolute simplest way to turn any Rack app into a streaming- and deferrable-capable service using Thin.
+It handles the necessary async calls to make Thin start streaming, then delivers your
+response body on each next tick until sent. If you're sending something big, make sure it responds to `each`
+in chunks:
 
-## Installation
+``` ruby
+class FileStreamer
+  def initialize(file)
+    @file = file
+  end
 
-Add this line to your application's Gemfile:
+  def each
+    while !@file.eof?
+      yield @file.read(8192)
+    end
+  end
+end
 
-    gem 'rack-emstream'
+# then respond with a FileStreamer
 
-And then execute:
+def call(env)
+  # ... do stuff ...
 
-    $ bundle
+  [ 200, {}, FileStreamer.new(File.open('big-file.mpg')) ]
+end
+```
 
-Or install it yourself as:
+Nothing to configure, just drop it in to your Rack middleware stack and
+use Thin as your server:
 
-    $ gem install rack-emstream
+``` ruby
+# for Rails:
 
-## Usage
+config.middleware.insert_before(::Rack::Lock, ::Rack::EMStream)
 
-TODO: Write usage instructions here
+# for Rack::Builder and derivatives:
 
-## Contributing
+use Rack::EMStream
+```
 
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
