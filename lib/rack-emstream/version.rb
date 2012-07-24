@@ -1,5 +1,7 @@
+require 'rack-emstream'
+
 module Rack
-  module EMStream
+  class EMStream
     VERSION = "0.1.0"
   end
 end
