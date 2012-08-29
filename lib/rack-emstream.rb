@@ -19,10 +19,10 @@ module Rack
     def _call(env)
       result = @app.call(env)
 
+      result[2].close if result[2].respond_to?(:close)
+
       EM.next_tick {
         env['async.callback'].call [ result[0], result[1], self ]
-
-        result[2].close if result[2].respond_to?(:close)
 
         result[2].each { |data| EM.next_tick { @callback.call(data) } }
         EM.next_tick { succeed }
