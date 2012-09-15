@@ -4,8 +4,8 @@ module Rack
   class EMStream
     include EventMachine::Deferrable
 
-    def initialize(app)
-      @app = app
+    def initialize(app, &block)
+      @app, @block = app, block
     end
 
     def each(&b)
@@ -22,7 +22,20 @@ module Rack
       EM.next_tick {
         env['async.callback'].call [ result[0], result[1], self ]
 
-        result[2].each { |data| EM.next_tick { @callback.call(data) } }
+        begin
+          result[2].each { |data|
+            EM.next_tick {
+              begin
+                @callback.call(data)
+              rescue => e
+                @callback.call(@block.call(e, env)) if @block
+              end
+            }
+          }
+        rescue => e
+          @callback.call(@block.call(e, env)) if @block
+        end
+
         EM.next_tick { succeed }
       }
 

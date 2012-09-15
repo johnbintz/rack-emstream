@@ -27,16 +27,20 @@ def call(env)
 end
 ```
 
-Nothing to configure, just drop it in to your Rack middleware stack and
-use Thin as your server:
+Only one thing to configure, the error handler if something explodes during the deferred
+callback (since you no longer have your Rack handlers at that point):
 
 ``` ruby
 # for Rails:
 
-config.middleware.insert_before(::Rack::Lock, ::Rack::EMStream)
+config.middleware.insert_before(::Rack::Lock, ::Rack::EMStream) do |exception, environment|
+  # do something when there's a deferred error
+end
 
 # for Rack::Builder and derivatives:
 
-use Rack::EMStream
+use Rack::EMStream do |exception, environment|
+  # do something when there's a deferred error
+end
 ```
 
