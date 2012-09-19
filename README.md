@@ -18,7 +18,7 @@ class FileStreamer
   end
 end
 
-# then respond with a FileStreamer
+# then respond with a `FileStreamer`
 
 def call(env)
   # ... do stuff ...
@@ -43,4 +43,6 @@ use Rack::EMStream do |exception, environment|
   # do something when there's a deferred error
 end
 ```
+
+I'm still pretty n00b to async stuff, so if you have suggestions, let me know!
 

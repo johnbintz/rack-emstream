@@ -21,27 +21,31 @@ module Rack
 
       result[2].close if result[2].respond_to?(:close)
 
-      EM.next_tick {
-        env['async.callback'].call [ result[0], result[1], self ]
+      if env['async.callback']
+        EM.next_tick {
+          env['async.callback'].call [ result[0], result[1], self ]
 
-        begin
-          result[2].each { |data|
-            EM.next_tick {
-              begin
-                @callback.call(data)
-              rescue => e
-                @callback.call(@block.call(e, env)) if @block
-              end
+          begin
+            result[2].each { |data|
+              EM.next_tick {
+                begin
+                  @callback.call(data)
+                rescue => e
+                  @callback.call(@block.call(e, env)) if @block
+                end
+              }
             }
-          }
-        rescue => e
-          @callback.call(@block.call(e, env)) if @block
-        end
+          rescue => e
+            @callback.call(@block.call(e, env)) if @block
+          end
 
-        EM.next_tick { succeed }
-      }
+          EM.next_tick { succeed }
+        }
 
-      throw :async
+        throw :async
+      else
+        result
+      end
     end
   end
 end
