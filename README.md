@@ -44,5 +44,8 @@ use Rack::EMStream do |exception, environment|
 end
 ```
 
+This, of course, means that you need to push all of your in-app error handing to happen before your response
+object hits `each`, but that's the price you pay for super-simple deferred streaming.
+
 I'm still pretty n00b to async stuff, so if you have suggestions, let me know!
 
